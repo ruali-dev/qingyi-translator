@@ -6,6 +6,7 @@
 
 - 安装附带的 Zotero 连接器后，在 Zotero PDF 中选中文字，右键点击“翻译选中文字”。
 - 在其他 PDF 阅读器中仍可选中文字后按备用快捷键 `Ctrl+Shift+T`。
+- 点击翻译后立即显示动态加载卡片；接口错误会原位切换为红色错误提示。
 - API Key 使用 Windows DPAPI 加密后保存在当前用户目录，不会写入项目或日志。
 - 支持 OpenAI、DeepSeek、Moonshot、通义兼容模式、Ollama 等提供 `/chat/completions` 的接口。
 

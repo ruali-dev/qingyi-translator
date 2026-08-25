@@ -43,9 +43,12 @@ var PaperTranslatorConnector = (() => {
       });
     } catch (error) {
       Zotero.debug(`Paper Translator connector: ${error}`);
-      reader._iframeWindow.alert(
-        "无法连接轻译。请先运行 PaperTranslator.exe，并检查模型设置。"
-      );
+      const status = error?.status || error?.xmlhttp?.status || error?.response?.status;
+      if (!status) {
+        reader._iframeWindow.alert(
+          "无法连接轻译。请先运行 PaperTranslator.exe。"
+        );
+      }
     }
   }
 

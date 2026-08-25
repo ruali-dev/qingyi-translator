@@ -59,6 +59,7 @@ class ConnectorServer:
                 try:
                     payload = json.loads(self.rfile.read(length).decode("utf-8"))
                     text = payload.get("text", "")
+                    outer.events.put(("translation_started", text))
                     result = outer.translate(text)
                     outer.events.put(("translation", result))
                     self._json(200, {
@@ -87,6 +88,7 @@ class ConnectorServer:
                 return
 
         self.server = ThreadingHTTPServer((self.host, self.port), Handler)
+        self.port = self.server.server_port
         self.thread = threading.Thread(
             target=self.server.serve_forever, name="connector-server", daemon=True
         )

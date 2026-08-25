@@ -20,6 +20,8 @@ ACCENT = "#4F6EF7"
 ACCENT_HOVER = "#405DE1"
 SUCCESS = "#12B76A"
 DANGER = "#D92D20"
+ERROR_BG = "#FEF3F2"
+ERROR_TEXT = "#B42318"
 TRANSPARENT = "#010203"
 FONT = "Microsoft YaHei UI"
 
@@ -44,9 +46,15 @@ class PaperTranslatorApp:
         self.result_text: tk.Text | None = None
         self.result_model: tk.Label | None = None
         self.result_source: tk.Label | None = None
+        self.result_mark: tk.Canvas | None = None
+        self.result_mark_bg: int | None = None
+        self.result_mark_text: int | None = None
+        self.copy_button: tk.Button | None = None
         self.status_var = tk.StringVar(value="准备就绪")
         self.api_key_visible = False
         self._drag_origin: tuple[int, int] | None = None
+        self._loading_generation = 0
+        self._result_mode = "success"
 
         self._apply_theme()
         self._build_settings()
@@ -210,7 +218,7 @@ class PaperTranslatorApp:
         if not text:
             self._show_error("没有读取到选中的文字")
             return
-        self._show_result("正在翻译…", text)
+        self._show_loading(text)
         self._translate_async(text, self.config)
 
     def _translate_async(self, text: str, config: AppConfig | None = None, test: bool = False) -> None:
@@ -246,8 +254,11 @@ class PaperTranslatorApp:
         top.bind("<B1-Motion>", self._drag_result)
         mark = tk.Canvas(top, width=30, height=30, bg=CARD, highlightthickness=0)
         mark.pack(side="left", padx=(0, 9))
-        self._rounded_rect(mark, 1, 1, 29, 29, 9, fill="#EEF1FF")
-        mark.create_text(15, 15, text="译", fill=ACCENT, font=(FONT, 11, "bold"))
+        self.result_mark = mark
+        self.result_mark_bg = self._rounded_rect(mark, 1, 1, 29, 29, 9, fill="#EEF1FF")
+        self.result_mark_text = mark.create_text(
+            15, 15, text="译", fill=ACCENT, font=(FONT, 11, "bold")
+        )
         tk.Label(top, text="论文翻译", bg=CARD, fg=TEXT, font=(FONT, 11, "bold")).pack(side="left")
         self.result_model = tk.Label(
             top, text="", bg="#F2F4F7", fg=MUTED, font=("Segoe UI", 8), padx=8, pady=3
@@ -265,7 +276,8 @@ class PaperTranslatorApp:
             bottom, text="", bg=CARD, fg="#98A2B3", font=(FONT, 8), anchor="w"
         )
         self._text_button(bottom, "设置", self.show_settings).pack(side="right", padx=(8, 0))
-        self._text_button(bottom, "复制译文", self._copy_result, accent=True).pack(side="right")
+        self.copy_button = self._text_button(bottom, "复制译文", self._copy_result, accent=True)
+        self.copy_button.pack(side="right")
         self.result_source.pack(side="left", fill="x", expand=True)
         text_shell = tk.Frame(body, bg=CARD)
         text_shell.pack(fill="both", expand=True)
@@ -290,27 +302,107 @@ class PaperTranslatorApp:
             font=(FONT, 9, "bold" if accent else "normal"), padx=13, pady=6, cursor="hand2"
         )
 
-    def _show_result(self, translation: str, source: str = "", model: str = "") -> None:
+    def _show_loading(self, source: str) -> None:
+        self._loading_generation += 1
+        generation = self._loading_generation
+        self._show_result("", source, mode="loading")
+        self._animate_loading(generation, 0)
+
+    def _animate_loading(self, generation: int, frame: int) -> None:
+        if (
+            generation != self._loading_generation
+            or self._result_mode != "loading"
+            or not self.result_window
+            or not self.result_window.winfo_exists()
+            or self.result_window.state() == "withdrawn"
+            or not self.result_text
+        ):
+            return
+        dots = ("●  ·  ·", "·  ●  ·", "·  ·  ●", "·  ●  ·")[frame % 4]
+        messages = ("正在理解句意", "正在对齐学术术语", "正在组织自然译文")
+        message = messages[(frame // 4) % len(messages)]
+        self.result_text.configure(state="normal")
+        self.result_text.delete("1.0", "end")
+        self.result_text.tag_configure(
+            "loading_title", font=(FONT, 12, "bold"), foreground=TEXT, spacing3=14
+        )
+        self.result_text.tag_configure(
+            "loading_dots", font=("Segoe UI", 12, "bold"), foreground=ACCENT, spacing3=12
+        )
+        self.result_text.tag_configure("loading_hint", font=(FONT, 9), foreground=MUTED)
+        self.result_text.insert("end", "正在翻译\n", "loading_title")
+        self.result_text.insert("end", f"{dots}\n", "loading_dots")
+        self.result_text.insert("end", message, "loading_hint")
+        self.result_text.configure(state="disabled")
+        self.result_window.after(220, lambda: self._animate_loading(generation, frame + 1))
+
+    def _show_result(
+        self, translation: str, source: str = "", model: str = "", *, mode: str = "success"
+    ) -> None:
+        was_visible = bool(
+            self.result_window
+            and self.result_window.winfo_exists()
+            and self.result_window.state() != "withdrawn"
+        )
         if not self.result_window or not self.result_window.winfo_exists():
             self._create_result_window()
         assert self.result_window and self.result_text and self.result_model and self.result_source
-        self.result_text.configure(state="normal", fg=TEXT if translation != "正在翻译…" else MUTED)
+        self._result_mode = mode
+        if mode != "loading":
+            self._loading_generation += 1
+        self._apply_result_mode(mode, model)
+        self.result_text.configure(state="normal")
         self.result_text.delete("1.0", "end")
         self.result_text.insert("1.0", translation)
         self.result_text.configure(state="disabled")
-        self.result_model.configure(text=model or "LLM")
         preview = " ".join(source.split())[:42]
-        self.result_source.configure(text=f"原文  {preview}" if preview else "")
-        x, y = cursor_position()
-        screen_w = self.result_window.winfo_screenwidth()
-        screen_h = self.result_window.winfo_screenheight()
-        pos_x = min(max(8, x + 18), screen_w - 528)
-        pos_y = min(max(8, y + 18), screen_h - 328)
-        self.result_window.geometry(f"520x300+{pos_x}+{pos_y}")
-        self.result_window.attributes("-alpha", 0.0)
-        self.result_window.deiconify()
+        if mode == "error":
+            self.result_source.configure(text="请检查 API 地址、Key 和模型设置", fg=ERROR_TEXT)
+        else:
+            self.result_source.configure(text=f"原文  {preview}" if preview else "", fg="#98A2B3")
+        if not was_visible:
+            x, y = cursor_position()
+            screen_w = self.result_window.winfo_screenwidth()
+            screen_h = self.result_window.winfo_screenheight()
+            pos_x = min(max(8, x + 18), screen_w - 528)
+            pos_y = min(max(8, y + 18), screen_h - 328)
+            self.result_window.geometry(f"520x300+{pos_x}+{pos_y}")
+            self.result_window.attributes("-alpha", 0.0)
+            self.result_window.deiconify()
+            self._fade_in(0.0)
         self.result_window.lift()
-        self._fade_in(0.0)
+
+    def _apply_result_mode(self, mode: str, model: str) -> None:
+        assert (
+            self.result_mark and self.result_mark_bg and self.result_mark_text
+            and self.result_model and self.result_text and self.copy_button
+        )
+        if mode == "error":
+            self.result_mark.itemconfigure(self.result_mark_bg, fill=ERROR_BG)
+            self.result_mark.itemconfigure(self.result_mark_text, text="!", fill=DANGER)
+            self.result_model.configure(text="翻译失败", bg=ERROR_BG, fg=ERROR_TEXT)
+            self.result_text.configure(fg=ERROR_TEXT)
+            self.copy_button.configure(
+                state="normal", text="复制详情", bg=DANGER, activebackground=ERROR_TEXT,
+                fg="white", activeforeground="white"
+            )
+        elif mode == "loading":
+            self.result_mark.itemconfigure(self.result_mark_bg, fill="#EEF1FF")
+            self.result_mark.itemconfigure(self.result_mark_text, text="译", fill=ACCENT)
+            self.result_model.configure(text="处理中", bg="#EEF1FF", fg=ACCENT)
+            self.result_text.configure(fg=MUTED)
+            self.copy_button.configure(
+                state="disabled", text="请稍候", bg="#F2F4F7", disabledforeground="#98A2B3"
+            )
+        else:
+            self.result_mark.itemconfigure(self.result_mark_bg, fill="#EEF1FF")
+            self.result_mark.itemconfigure(self.result_mark_text, text="译", fill=ACCENT)
+            self.result_model.configure(text=model or "LLM", bg="#F2F4F7", fg=MUTED)
+            self.result_text.configure(fg=TEXT)
+            self.copy_button.configure(
+                state="normal", text="复制译文", bg=ACCENT, activebackground=ACCENT_HOVER,
+                fg="white", activeforeground="white"
+            )
 
     def _fade_in(self, alpha: float) -> None:
         if not self.result_window or not self.result_window.winfo_exists():
@@ -343,7 +435,7 @@ class PaperTranslatorApp:
             self.result_source.configure(text="已复制到剪贴板")
 
     def _show_error(self, message: str) -> None:
-        self._show_result(f"暂时无法翻译\n\n{message}", model="需要处理")
+        self._show_result(f"翻译失败\n\n{message}", mode="error")
 
     def _set_status(self, message: str, *, error: bool = False, pending: bool = False) -> None:
         self.status_var.set(message)
@@ -392,7 +484,9 @@ class PaperTranslatorApp:
         try:
             while True:
                 event, payload = self.events.get_nowait()
-                if event == "translation":
+                if event == "translation_started":
+                    self._show_loading(str(payload))
+                elif event == "translation":
                     result = payload
                     assert isinstance(result, TranslationResult)
                     self._show_result(result.translation, result.source, result.model)

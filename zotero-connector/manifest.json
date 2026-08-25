@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "论文划词翻译器连接器",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "把 Zotero PDF 选区发送到本机论文划词翻译器",
   "author": "Paper Translator",
   "applications": {
