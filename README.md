@@ -25,7 +25,7 @@
 
 它来自一个很直接的需求：想要词典式的划词体验，又不想为了翻译论文安装一套臃肿的完整词典；同时，希望模型和服务商始终由自己选择。
 
-> 当前状态：早期预览版，仅支持 Windows 与 Zotero 10.0.x。发布 GitHub Release 前请先完成[发布清单](docs/release-checklist.md)。
+> 兼容性：Windows · Zotero 10.0.x
 
 ## 实机效果
 

@@ -25,7 +25,7 @@ Requests go to the OpenAI-compatible endpoint you configure. The desktop process
 
 The motivation is simple: get the selection-translation flow of a full dictionary app without installing one just to read papers, while keeping control over the model and provider.
 
-> Status: early preview for Windows and Zotero 10.0.x. Complete the [release checklist](docs/release-checklist.md) before publishing the first GitHub Release.
+> Compatibility: Windows · Zotero 10.0.x
 
 ## See it in action
 
