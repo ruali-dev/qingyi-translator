@@ -23,7 +23,31 @@
 
 翻译请求发送到你配置的 OpenAI 兼容接口；桌面端与 Zotero 连接器都很小，不需要常驻浏览器或完整 Web 框架。
 
+它来自一个很直接的需求：想要词典式的划词体验，又不想为了翻译论文安装一套臃肿的完整词典；同时，希望模型和服务商始终由自己选择。
+
 > 当前状态：早期预览版，仅支持 Windows 与 Zotero 10.0.x。发布 GitHub Release 前请先完成[发布清单](docs/release-checklist.md)。
+
+## 实机效果
+
+下面是轻译在 Zotero 10 阅读器中的实际运行过程，不是概念图。
+
+**1 — 选中论文内容，在原生右键菜单中点击“翻译选中文字”**
+
+<p align="center">
+  <img src="assets/readme/screenshots/context-menu.png" alt="在 Zotero 10 PDF 阅读器中选中文字，并从原生右键菜单启动轻译" width="100%">
+</p>
+
+**2 — 翻译窗口立即出现，并明确显示处理状态**
+
+<p align="center">
+  <img src="assets/readme/screenshots/translating.png" alt="轻译窗口显示正在翻译和学术术语对齐状态" width="100%">
+</p>
+
+**3 — 翻译完成，直接复制结果或继续阅读**
+
+<p align="center">
+  <img src="assets/readme/screenshots/translated-paragraph.png" alt="轻译在 Zotero 论文旁显示完整中文翻译结果" width="100%">
+</p>
 
 ## 亮点
 
@@ -48,6 +72,10 @@
 
 点击“保存并隐藏”后，轻译会留在系统托盘。
 
+<p align="center">
+  <img src="assets/readme/screenshots/settings.png" alt="轻译模型设置页，API Key 已遮蔽，可测试连接并保存到后台" width="614">
+</p>
+
 ### 2. 安装 Zotero 连接器
 
 1. 在 Zotero 中打开“工具 → 插件”。
@@ -56,6 +84,16 @@
 4. 打开 PDF，划词并右键点击“翻译选中文字”。
 
 桌面端需要保持运行。若连接器找不到桌面端，Zotero 会给出明确提示。
+
+<p align="center">
+  <img src="assets/readme/screenshots/install-connector.png" alt="在 Zotero 10 插件管理器中选择 Install Plugin From File" width="100%">
+</p>
+
+安装后确认“轻译 · Qingyi 连接器”处于启用状态：
+
+<p align="center">
+  <img src="assets/readme/screenshots/connector-enabled.png" alt="Zotero 10 中已经安装并启用轻译连接器" width="716">
+</p>
 
 ### 3. 配置兼容接口
 
@@ -97,7 +135,7 @@ paper_translator/   Windows 桌面端、翻译客户端、本地服务和 UI
 zotero-connector/   Zotero 10 原生右键菜单连接器
 scripts/            一键构建脚本
 tests/              配置、接口、本地服务和 XPI 元数据测试
-assets/readme/      GitHub README 视觉资源
+assets/readme/      GitHub README 品牌视觉与实机截图
 docs/               发布与维护文档
 ```
 
@@ -120,6 +158,8 @@ Zotero 连接器通过 Reader 事件缓存当前选区，再把文字发送给�
 ## 参与贡献
 
 欢迎提交问题、交互建议和兼容接口适配。开始修改前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)，版本变化记录在 [CHANGELOG.md](CHANGELOG.md)。
+
+如果轻译让你读论文顺手了一点，欢迎给这个仓库点一个 Star。
 
 ## 许可证
 

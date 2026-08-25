@@ -23,7 +23,31 @@ Qingyi keeps paper translation inside the reading flow: select text in a Zotero 
 
 Requests go to the OpenAI-compatible endpoint you configure. The desktop process and Zotero connector stay deliberately small—no resident browser and no full web framework.
 
+The motivation is simple: get the selection-translation flow of a full dictionary app without installing one just to read papers, while keeping control over the model and provider.
+
 > Status: early preview for Windows and Zotero 10.0.x. Complete the [release checklist](docs/release-checklist.md) before publishing the first GitHub Release.
+
+## See it in action
+
+These are screenshots from Qingyi running inside the Zotero 10 reading flow—not conceptual mockups.
+
+**1 — Select paper text and choose `翻译选中文字` from the native context menu**
+
+<p align="center">
+  <img src="assets/readme/screenshots/context-menu.png" alt="Selected text in the Zotero 10 PDF reader with the native Qingyi context-menu action" width="100%">
+</p>
+
+**2 — The translation window appears immediately with a clear processing state**
+
+<p align="center">
+  <img src="assets/readme/screenshots/translating.png" alt="Qingyi showing its active translation and terminology-alignment state" width="100%">
+</p>
+
+**3 — Read or copy the result without leaving the paper**
+
+<p align="center">
+  <img src="assets/readme/screenshots/translated-paragraph.png" alt="A completed Chinese translation displayed beside the paper in Zotero" width="100%">
+</p>
 
 ## Highlights
 
@@ -48,6 +72,10 @@ Download `Qingyi.exe` from [GitHub Releases](https://github.com/ruali-dev/qingyi
 
 Choose `保存并隐藏` (“Save and hide”) to keep Qingyi in the system tray.
 
+<p align="center">
+  <img src="assets/readme/screenshots/settings.png" alt="Qingyi model settings with the API key masked, connection test, and background-run action" width="614">
+</p>
+
 ### 2. Install the Zotero connector
 
 1. Open “Tools → Plugins” in Zotero.
@@ -56,6 +84,16 @@ Choose `保存并隐藏` (“Save and hide”) to keep Qingyi in the system tray
 4. Open a PDF, select text, and right-click `翻译选中文字` (“Translate selected text”).
 
 Keep the desktop app running. Zotero shows a clear message when it cannot reach Qingyi.
+
+<p align="center">
+  <img src="assets/readme/screenshots/install-connector.png" alt="Choosing Install Plugin From File in the Zotero 10 plugin manager" width="100%">
+</p>
+
+Confirm that the “轻译 · Qingyi 连接器” entry is enabled:
+
+<p align="center">
+  <img src="assets/readme/screenshots/connector-enabled.png" alt="The Qingyi connector installed and enabled in Zotero 10" width="716">
+</p>
 
 ### 3. Configure an API
 
@@ -97,7 +135,7 @@ paper_translator/   Windows app, translation client, local service, and UI
 zotero-connector/   Native Zotero 10 context-menu connector
 scripts/            One-command packaging script
 tests/              Config, API, local server, and XPI metadata tests
-assets/readme/      GitHub README artwork
+assets/readme/      GitHub README artwork and product screenshots
 docs/               Release and maintenance notes
 ```
 
@@ -120,6 +158,8 @@ The Zotero connector caches the current Reader selection and sends it to the des
 ## Contributing
 
 Issues, interaction ideas, and provider compatibility improvements are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes; release history lives in [CHANGELOG.md](CHANGELOG.md).
+
+If Qingyi makes paper reading a little smoother, consider starring the repository.
 
 ## License
 
