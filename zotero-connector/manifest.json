@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "轻译 · Qingyi 连接器",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "把 Zotero PDF 选区发送到本机轻译桌面端",
   "author": "Qingyi contributors",
   "applications": {

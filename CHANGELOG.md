@@ -4,15 +4,17 @@
 
 ## Unreleased
 
-- 品牌名称统一为“轻译 · Qingyi”。
-- 构建产物更名为 `Qingyi.exe` 与 `qingyi-zotero.xpi`。
-- 补充中英文 README、贡献说明、CI 和发布清单。
-- 采用 Apache License 2.0，并补充 GitHub 项目与 Zotero 自动更新元数据。
+## 0.2.3 - 2026-08-25
+
 - 使用真实的 Zotero 10 配置、安装、加载与翻译截图补充中英文使用指南。
 - 新增轻译品牌应用图标，并应用到 EXE、设置窗口和系统托盘。
 
 ## 0.2.2 - 2026-08-25
 
+- 品牌名称统一为“轻译 · Qingyi”。
+- 构建产物更名为 `Qingyi.exe` 与 `qingyi-zotero.xpi`。
+- 补充中英文 README、贡献说明、CI 和发布清单。
+- 采用 Apache License 2.0，并补充 GitHub 项目与 Zotero 自动更新元数据。
 - 点击翻译后立即显示加载卡片。
 - 翻译成功后在原窗口显示结果。
 - 超时、鉴权和网络错误使用红色错误气泡呈现。
