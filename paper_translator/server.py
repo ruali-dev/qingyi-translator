@@ -35,7 +35,7 @@ class ConnectorServer:
                 if self.path != "/health":
                     self._json(404, {"error": "not found"})
                     return
-                self._json(200, {"ok": True, "name": "PaperTranslator"})
+                self._json(200, {"ok": True, "name": "Qingyi"})
 
             def do_POST(self) -> None:  # noqa: N802
                 if self.path != "/translate":

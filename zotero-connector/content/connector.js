@@ -42,11 +42,11 @@ var PaperTranslatorConnector = (() => {
         timeout: 65000
       });
     } catch (error) {
-      Zotero.debug(`Paper Translator connector: ${error}`);
+      Zotero.debug(`Qingyi connector: ${error}`);
       const status = error?.status || error?.xmlhttp?.status || error?.response?.status;
       if (!status) {
         reader._iframeWindow.alert(
-          "无法连接轻译。请先运行 PaperTranslator.exe。"
+          "无法连接轻译。请先运行 Qingyi.exe。"
         );
       }
     }

@@ -1,74 +1,126 @@
-# 论文划词翻译器
+<p align="center">
+  <img src="assets/readme/hero.svg" alt="轻译：为 Zotero 论文阅读设计的轻量划词翻译工具" width="100%">
+</p>
 
-一个面向 Windows 和 Zotero 10 的轻量划词翻译工具。翻译请求走你自己的 OpenAI 兼容 LLM 接口。
+<p align="center">
+  <strong>选中，右键，读懂。</strong><br>
+  一个面向 Windows 与 Zotero 10 的轻量 LLM 划词翻译工具。
+</p>
 
-## 能做什么
+<p align="center">
+  简体中文 · <a href="README.en.md">English</a>
+</p>
 
-- 安装附带的 Zotero 连接器后，在 Zotero PDF 中选中文字，右键点击“翻译选中文字”。
-- 在其他 PDF 阅读器中仍可选中文字后按备用快捷键 `Ctrl+Shift+T`。
-- 点击翻译后立即显示动态加载卡片；接口错误会原位切换为红色错误提示。
-- API Key 使用 Windows DPAPI 加密后保存在当前用户目录，不会写入项目或日志。
-- 支持 OpenAI、DeepSeek、Moonshot、通义兼容模式、Ollama 等提供 `/chat/completions` 的接口。
+<p align="center">
+  <a href="https://github.com/ruali-dev/qingyi-translator/actions/workflows/ci.yml"><img src="https://github.com/ruali-dev/qingyi-translator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-5965E8" alt="Apache-2.0 License"></a>
+  <a href="https://github.com/ruali-dev/qingyi-translator/releases"><img src="https://img.shields.io/github/v/release/ruali-dev/qingyi-translator?display_name=tag&sort=semver" alt="GitHub Release"></a>
+</p>
 
-> 桌面程序本身不能修改 Zotero 内部菜单，因此附带一个极薄的 Zotero 连接器。连接器使用官方 Reader 事件缓存当前选区，并通过 `createViewContextMenu` 把翻译命令加入原生右键菜单。
+# 轻译（Qingyi）
 
-## 快速开始
+轻译把论文翻译放回最自然的阅读动作里：在 Zotero PDF 中选中文字，右键点击“翻译选中文字”，结果卡片会立刻出现。等待期间显示加载动效，接口异常则原位显示红色错误提示，不再让人猜程序是不是卡住了。
 
-### 1. 运行桌面程序
+翻译请求发送到你配置的 OpenAI 兼容接口；桌面端与 Zotero 连接器都很小，不需要常驻浏览器或完整 Web 框架。
 
-如果使用已打包版本，双击 `PaperTranslator.exe`。
+> 当前状态：早期预览版，仅支持 Windows 与 Zotero 10.0.x。发布 GitHub Release 前请先完成[发布清单](docs/release-checklist.md)。
 
-从源码运行：
+## 亮点
 
-```powershell
-py -3 -m pip install -r requirements.txt
-py -3 app.py
-```
+- **原生右键入口**：Zotero PDF 划词后直接在上下文菜单中翻译。
+- **即时反馈**：先弹出轻量卡片和加载动效，再异步填入结果。
+- **错误可见**：超时、鉴权和网络错误会显示为红色提示气泡。
+- **自带接口选择权**：支持 OpenAI、DeepSeek、Moonshot、通义兼容模式、Ollama 等 `/chat/completions` 接口。
+- **本地安全存储**：API Key 经 Windows DPAPI 加密，只能由当前 Windows 用户解密。
+- **低常驻开销**：Python/Tk 桌面端、Win32 托盘和一个极薄的 Zotero 连接器。
+- **备用快捷键**：其他阅读器中可使用 `Ctrl+Shift+T` 翻译当前选区。
 
-首次启动填写：
+## 使用方式
 
-- API 地址：例如 `https://api.openai.com/v1`
+### 1. 运行桌面端
+
+从 [GitHub Releases](https://github.com/ruali-dev/qingyi-translator/releases/latest) 下载并运行 `Qingyi.exe`。首次启动时填写：
+
+- API 地址，例如 `https://api.openai.com/v1`
 - API Key
-- 模型：例如 `gpt-4.1-mini`
-- 目标语言：默认 `简体中文`
+- 模型，例如 `gpt-4.1-mini`
+- 目标语言，默认 `简体中文`
 
-点击“保存并隐藏”。程序会留在系统托盘。
+点击“保存并隐藏”后，轻译会留在系统托盘。
 
-### 2. 安装 Zotero 10 连接器
+### 2. 安装 Zotero 连接器
 
-1. 先运行桌面程序。
-2. Zotero 中打开“工具 → 插件”。
-3. 点击齿轮 → “Install Plugin From File…”。
-4. 选择 `dist/paper-translator-zotero.xpi`。
-5. 在 PDF 中划词，右键点击“翻译选中文字”。
+1. 在 Zotero 中打开“工具 → 插件”。
+2. 点击齿轮，选择“Install Plugin From File…”。
+3. 选择 Release 中的 `qingyi-zotero.xpi`。
+4. 打开 PDF，划词并右键点击“翻译选中文字”。
 
-### 3. 其他 PDF 阅读器
+桌面端需要保持运行。若连接器找不到桌面端，Zotero 会给出明确提示。
 
-选中文字后按 `Ctrl+Shift+T`。程序会模拟一次 `Ctrl+C` 获取选区，并在鼠标附近弹出翻译。
-
-## 常见接口配置
+### 3. 配置兼容接口
 
 | 提供方 | API 地址示例 | 模型示例 |
 | --- | --- | --- |
 | OpenAI | `https://api.openai.com/v1` | `gpt-4.1-mini` |
 | DeepSeek | `https://api.deepseek.com` | `deepseek-chat` |
-| Ollama | `http://127.0.0.1:11434/v1` | 本地已安装模型名 |
+| Ollama | `http://127.0.0.1:11434/v1` | 本地已安装的模型名 |
 
-程序会自动在 API 地址后补 `/chat/completions`。也可以直接填写完整地址。
+轻译会自动在 API 地址后补上 `/chat/completions`；也可以直接填写完整地址。
 
-## 构建
+## 从源码运行
+
+要求：Windows、Python 3.11+、Zotero 10.0.x。
 
 ```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+py -3 -m pip install -r requirements-dev.txt
+py -3 app.py
+```
+
+运行测试与构建：
+
+```powershell
+py -3 -m pytest
 py -3 scripts/build.py
 ```
 
-产物：
+构建产物位于 `dist/`：
 
-- `dist/PaperTranslator.exe`
-- `dist/paper-translator-zotero.xpi`
+- `Qingyi.exe`
+- `qingyi-zotero.xpi`
 
-## 本地数据
+## 项目结构
 
-配置保存在 `%APPDATA%\PaperTranslator\config.json`。API Key 只允许当前 Windows 用户解密。
+```text
+paper_translator/   Windows 桌面端、翻译客户端、本地服务和 UI
+zotero-connector/   Zotero 10 原生右键菜单连接器
+scripts/            一键构建脚本
+tests/              配置、接口、本地服务和 XPI 元数据测试
+assets/readme/      GitHub README 视觉资源
+docs/               发布与维护文档
+```
 
-本地连接器监听 `127.0.0.1:8765`，只接受最大 64 KiB 的 JSON 请求。它不会监听局域网地址。
+Zotero 连接器通过 Reader 事件缓存当前选区，再把文字发送给监听在 `127.0.0.1:8765` 的桌面端。桌面端负责显示状态卡片并调用 LLM，API Key 不会经过连接器。
+
+## 隐私与安全
+
+- 只有选中的文字会发送到你配置的 LLM 服务商。
+- API Key 使用 Windows DPAPI 加密，配置保存在 `%APPDATA%\PaperTranslator\config.json`。该旧目录名为兼容已有用户暂时保留。
+- 本地服务只监听 `127.0.0.1`，不暴露到局域网；单次 JSON 请求上限为 64 KiB。
+- 请在处理敏感或未公开论文前确认所选服务商的数据政策。
+
+## 已知限制
+
+- 目前只支持 Windows。
+- Zotero 原生右键连接器目前锁定 Zotero 10.0.x。
+- 其他 PDF 阅读器只能使用备用快捷键，无法由独立桌面程序注入原生右键菜单。
+- PDF 扫描件需要先完成 OCR，才能获得可翻译的文字选区。
+
+## 参与贡献
+
+欢迎提交问题、交互建议和兼容接口适配。开始修改前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)，版本变化记录在 [CHANGELOG.md](CHANGELOG.md)。
+
+## 许可证
+
+轻译采用 [Apache License 2.0](LICENSE) 开源。你可以在许可证条款范围内使用、修改和分发本项目。

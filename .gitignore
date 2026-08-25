@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 pytest-cache-files-*/
+.coverage
+htmlcov/
 .venv/
 
 # Local build and verification files
@@ -16,4 +18,3 @@ dist/
 .vscode/
 .DS_Store
 Thumbs.db
-

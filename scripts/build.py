@@ -12,9 +12,10 @@ DIST = ROOT / "dist"
 
 
 def build_connector() -> Path:
-    output = DIST / "paper-translator-zotero.xpi"
+    output = DIST / "qingyi-zotero.xpi"
     connector = ROOT / "zotero-connector"
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.write(ROOT / "LICENSE", "LICENSE")
         for path in connector.rglob("*"):
             if path.is_file():
                 archive.write(path, path.relative_to(connector).as_posix())
@@ -25,7 +26,8 @@ def build_desktop() -> Path:
     subprocess.run(
         [
             sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean",
-            "--onefile", "--windowed", "--name", "PaperTranslator",
+            "--onefile", "--windowed", "--name", "Qingyi",
+            "--add-data", f"{ROOT / 'LICENSE'};.",
             "--workpath", str(ROOT / ".codex-tmp" / "pyinstaller"),
             "--specpath", str(ROOT / ".codex-tmp"),
             str(ROOT / "app.py")
@@ -33,7 +35,7 @@ def build_desktop() -> Path:
         cwd=ROOT,
         check=True,
     )
-    return DIST / "PaperTranslator.exe"
+    return DIST / "Qingyi.exe"
 
 
 def main() -> None:
@@ -41,7 +43,7 @@ def main() -> None:
     connector = build_connector()
     desktop = build_desktop()
     shutil.rmtree(ROOT / ".codex-tmp" / "pyinstaller", ignore_errors=True)
-    spec = ROOT / ".codex-tmp" / "PaperTranslator.spec"
+    spec = ROOT / ".codex-tmp" / "Qingyi.spec"
     if spec.exists():
         spec.unlink()
     print(f"Built {desktop}")

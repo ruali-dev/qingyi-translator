@@ -101,7 +101,7 @@ class TrayIcon:
             win32gui.Shell_NotifyIcon(
                 win32gui.NIM_ADD,
                 (self.hwnd, 0, win32gui.NIF_ICON | win32gui.NIF_MESSAGE | win32gui.NIF_TIP,
-                 self.WM_TRAY, icon, "论文划词翻译器"),
+                 self.WM_TRAY, icon, "轻译 · Qingyi"),
             )
         except win32gui.error:
             self.actions.put("tray_error")
