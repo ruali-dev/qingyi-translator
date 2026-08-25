@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "论文划词翻译器连接器",
+  "version": "0.2.1",
+  "description": "把 Zotero PDF 选区发送到本机论文划词翻译器",
+  "author": "Paper Translator",
+  "applications": {
+    "zotero": {
+      "id": "paper-translator-connector@local",
+      "update_url": "https://example.invalid/paper-translator/updates.json",
+      "strict_min_version": "10.0",
+      "strict_max_version": "10.0.*"
+    }
+  }
+}
