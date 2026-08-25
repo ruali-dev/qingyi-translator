@@ -6,3 +6,5 @@
 *.svg text eol=lf
 *.xpi binary
 *.exe binary
+*.ico binary
+*.png binary

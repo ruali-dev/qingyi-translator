@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
+ICON = ROOT / "assets" / "icon" / "qingyi.ico"
 
 
 def build_connector() -> Path:
@@ -23,11 +24,14 @@ def build_connector() -> Path:
 
 
 def build_desktop() -> Path:
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "build_icon.py")], check=True)
     subprocess.run(
         [
             sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean",
             "--onefile", "--windowed", "--name", "Qingyi",
+            "--icon", str(ICON),
             "--add-data", f"{ROOT / 'LICENSE'};.",
+            "--add-data", f"{ICON};assets/icon",
             "--workpath", str(ROOT / ".codex-tmp" / "pyinstaller"),
             "--specpath", str(ROOT / ".codex-tmp"),
             str(ROOT / "app.py")

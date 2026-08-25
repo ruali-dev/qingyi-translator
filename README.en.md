@@ -135,6 +135,7 @@ paper_translator/   Windows app, translation client, local service, and UI
 zotero-connector/   Native Zotero 10 context-menu connector
 scripts/            One-command packaging script
 tests/              Config, API, local server, and XPI metadata tests
+assets/icon/         Editable brand artwork, PNG, and multi-size Windows ICO
 assets/readme/      GitHub README artwork and product screenshots
 docs/               Release and maintenance notes
 ```

@@ -3,6 +3,7 @@ from __future__ import annotations
 import queue
 import threading
 import tkinter as tk
+from pathlib import Path
 from tkinter import ttk
 
 from .config import AppConfig, ConfigStore
@@ -27,7 +28,7 @@ FONT = "Microsoft YaHei UI"
 
 
 class PaperTranslatorApp:
-    def __init__(self, root: tk.Tk) -> None:
+    def __init__(self, root: tk.Tk, icon_path: Path | None = None) -> None:
         self.root = root
         self.root.title("轻译 · 论文划词翻译")
         self.root.geometry("620x570")
@@ -40,7 +41,7 @@ class PaperTranslatorApp:
         self.actions: queue.Queue[str] = queue.Queue()
         self.events: queue.Queue[tuple[str, object]] = queue.Queue()
         self.hotkey = GlobalHotkey(self.actions)
-        self.tray = TrayIcon(self.actions)
+        self.tray = TrayIcon(self.actions, icon_path)
         self.server: ConnectorServer | None = None
         self.result_window: tk.Toplevel | None = None
         self.result_text: tk.Text | None = None
@@ -89,7 +90,13 @@ class PaperTranslatorApp:
         logo = tk.Canvas(header, width=46, height=46, bg=BG, highlightthickness=0)
         logo.pack(side="left", padx=(0, 13))
         self._rounded_rect(logo, 1, 1, 45, 45, 13, fill=ACCENT)
-        logo.create_text(23, 23, text="译", fill="white", font=(FONT, 17, "bold"))
+        logo.create_line(13, 14, 33, 14, fill="white", width=3, capstyle=tk.ROUND)
+        logo.create_line(13, 22, 28, 22, fill="white", width=3, capstyle=tk.ROUND)
+        logo.create_line(13, 30, 22, 30, fill="white", width=3, capstyle=tk.ROUND)
+        logo.create_line(
+            26, 30, 31, 35, 39, 24, fill="#D7F9E4", width=3,
+            capstyle=tk.ROUND, joinstyle=tk.ROUND
+        )
         heading = tk.Frame(header, bg=BG)
         heading.pack(side="left", fill="x", expand=True)
         tk.Label(heading, text="轻译", bg=BG, fg=TEXT, font=(FONT, 19, "bold")).pack(anchor="w")

@@ -4,6 +4,7 @@ import ctypes
 import queue
 import threading
 from ctypes import wintypes
+from pathlib import Path
 
 import win32api
 import win32con
@@ -66,10 +67,13 @@ class TrayIcon:
     CMD_SETTINGS = 1001
     CMD_EXIT = 1002
 
-    def __init__(self, actions: queue.Queue[str]) -> None:
+    def __init__(self, actions: queue.Queue[str], icon_path: Path | None = None) -> None:
         self.actions = actions
+        self.icon_path = icon_path
         self.thread = threading.Thread(target=self._run, name="tray-icon", daemon=True)
         self.hwnd: int | None = None
+        self.icon: int | None = None
+        self.owns_icon = False
 
     def start(self) -> None:
         self.thread.start()
@@ -96,18 +100,30 @@ class TrayIcon:
         self.hwnd = win32gui.CreateWindow(
             class_name, class_name, 0, 0, 0, 0, 0, 0, 0, window_class.hInstance, None
         )
-        icon = win32gui.LoadIcon(0, win32con.IDI_APPLICATION)
+        self.icon = self._load_icon()
         try:
             win32gui.Shell_NotifyIcon(
                 win32gui.NIM_ADD,
                 (self.hwnd, 0, win32gui.NIF_ICON | win32gui.NIF_MESSAGE | win32gui.NIF_TIP,
-                 self.WM_TRAY, icon, "轻译 · Qingyi"),
+                 self.WM_TRAY, self.icon, "轻译 · Qingyi"),
             )
         except win32gui.error:
             self.actions.put("tray_error")
             win32gui.DestroyWindow(self.hwnd)
             return
         win32gui.PumpMessages()
+
+    def _load_icon(self) -> int:
+        if self.icon_path and self.icon_path.exists():
+            try:
+                self.owns_icon = True
+                return win32gui.LoadImage(
+                    0, str(self.icon_path), win32con.IMAGE_ICON, 0, 0,
+                    win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE
+                )
+            except win32gui.error:
+                self.owns_icon = False
+        return win32gui.LoadIcon(0, win32con.IDI_APPLICATION)
 
     def _on_tray(self, hwnd: int, msg: int, wparam: int, lparam: int) -> int:
         if lparam == win32con.WM_LBUTTONUP:
@@ -137,5 +153,11 @@ class TrayIcon:
         except win32gui.error:
             pass
         finally:
+            if self.owns_icon and self.icon:
+                try:
+                    win32gui.DestroyIcon(self.icon)
+                except win32gui.error:
+                    pass
+                self.icon = None
             win32gui.PostQuitMessage(0)
         return 0

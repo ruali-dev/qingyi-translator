@@ -135,6 +135,7 @@ paper_translator/   Windows 桌面端、翻译客户端、本地服务和 UI
 zotero-connector/   Zotero 10 原生右键菜单连接器
 scripts/            一键构建脚本
 tests/              配置、接口、本地服务和 XPI 元数据测试
+assets/icon/         可编辑的品牌图标、PNG 与多尺寸 Windows ICO
 assets/readme/      GitHub README 品牌视觉与实机截图
 docs/               发布与维护文档
 ```
