@@ -25,6 +25,25 @@ ERROR_BG = "#FEF3F2"
 ERROR_TEXT = "#B42318"
 TRANSPARENT = "#010203"
 FONT = "Microsoft YaHei UI"
+RESULT_DEFAULT_WIDTH = 520
+RESULT_DEFAULT_HEIGHT = 300
+RESULT_MIN_WIDTH = 420
+RESULT_MIN_HEIGHT = 240
+
+
+def constrained_result_size(
+    start_width: int,
+    start_height: int,
+    delta_x: int,
+    delta_y: int,
+    max_width: int,
+    max_height: int,
+) -> tuple[int, int]:
+    width_limit = max(RESULT_MIN_WIDTH, max_width)
+    height_limit = max(RESULT_MIN_HEIGHT, max_height)
+    width = min(max(RESULT_MIN_WIDTH, start_width + delta_x), width_limit)
+    height = min(max(RESULT_MIN_HEIGHT, start_height + delta_y), height_limit)
+    return width, height
 
 
 class PaperTranslatorApp:
@@ -44,6 +63,11 @@ class PaperTranslatorApp:
         self.tray = TrayIcon(self.actions, icon_path)
         self.server: ConnectorServer | None = None
         self.result_window: tk.Toplevel | None = None
+        self.result_canvas: tk.Canvas | None = None
+        self.result_shadow: int | None = None
+        self.result_card: int | None = None
+        self.result_body_item: int | None = None
+        self.result_resize_grip: tk.Canvas | None = None
         self.result_text: tk.Text | None = None
         self.result_model: tk.Label | None = None
         self.result_source: tk.Label | None = None
@@ -54,6 +78,7 @@ class PaperTranslatorApp:
         self.status_var = tk.StringVar(value="准备就绪")
         self.api_key_visible = False
         self._drag_origin: tuple[int, int] | None = None
+        self._resize_origin: tuple[int, int, int, int] | None = None
         self._loading_generation = 0
         self._result_mode = "success"
 
@@ -246,19 +271,20 @@ class PaperTranslatorApp:
             window.wm_attributes("-transparentcolor", TRANSPARENT)
         except tk.TclError:
             window.configure(bg=CARD)
-        window.geometry("520x300")
+        window.geometry(f"{RESULT_DEFAULT_WIDTH}x{RESULT_DEFAULT_HEIGHT}")
+        window.minsize(RESULT_MIN_WIDTH, RESULT_MIN_HEIGHT)
         window.bind("<Escape>", lambda _event: window.withdraw())
         canvas = tk.Canvas(window, bg=TRANSPARENT, highlightthickness=0)
         canvas.pack(fill="both", expand=True)
-        self._rounded_rect(canvas, 9, 12, 511, 292, 22, fill="#D8DEE9")
-        self._rounded_rect(canvas, 5, 5, 507, 287, 22, fill=CARD, outline=BORDER)
+        shadow = self._rounded_rect(canvas, 9, 12, 511, 292, 22, fill="#D8DEE9")
+        card = self._rounded_rect(canvas, 5, 5, 507, 287, 22, fill=CARD, outline=BORDER)
         body = tk.Frame(canvas, bg=CARD)
-        canvas.create_window(25, 22, anchor="nw", window=body, width=462, height=244)
+        body_item = canvas.create_window(
+            25, 22, anchor="nw", window=body, width=462, height=244
+        )
 
         top = tk.Frame(body, bg=CARD, cursor="fleur")
         top.pack(fill="x")
-        top.bind("<ButtonPress-1>", self._begin_drag)
-        top.bind("<B1-Motion>", self._drag_result)
         mark = tk.Canvas(top, width=30, height=30, bg=CARD, highlightthickness=0)
         mark.pack(side="left", padx=(0, 9))
         self.result_mark = mark
@@ -266,7 +292,10 @@ class PaperTranslatorApp:
         self.result_mark_text = mark.create_text(
             15, 15, text="译", fill=ACCENT, font=(FONT, 11, "bold")
         )
-        tk.Label(top, text="论文翻译", bg=CARD, fg=TEXT, font=(FONT, 11, "bold")).pack(side="left")
+        title = tk.Label(
+            top, text="论文翻译", bg=CARD, fg=TEXT, font=(FONT, 11, "bold")
+        )
+        title.pack(side="left")
         self.result_model = tk.Label(
             top, text="", bg="#F2F4F7", fg=MUTED, font=("Segoe UI", 8), padx=8, pady=3
         )
@@ -298,7 +327,31 @@ class PaperTranslatorApp:
         scrollbar.pack(side="right", fill="y")
         text_widget.pack(side="left", fill="both", expand=True)
         self.result_window = window
+        self.result_canvas = canvas
+        self.result_shadow = shadow
+        self.result_card = card
+        self.result_body_item = body_item
         self.result_text = text_widget
+
+        grip = tk.Canvas(
+            window, width=20, height=20, bg=CARD, highlightthickness=0,
+            cursor="size_nw_se"
+        )
+        for offset in (0, 5, 10):
+            grip.create_line(
+                18 - offset, 18, 18, 18 - offset,
+                fill="#98A2B3", width=1, capstyle=tk.ROUND
+            )
+        grip.place(relx=1, rely=1, anchor="se", x=-14, y=-14)
+        grip.bind("<ButtonPress-1>", self._begin_resize)
+        grip.bind("<B1-Motion>", self._resize_result)
+        grip.bind("<ButtonRelease-1>", self._end_resize)
+        self.result_resize_grip = grip
+
+        self._bind_drag_handle(top, mark, title, self.result_model)
+        window.bind("<Configure>", self._layout_result_window)
+        window.update_idletasks()
+        self._layout_result_window()
 
     def _text_button(self, parent: tk.Widget, text: str, command: object, *, accent: bool = False) -> tk.Button:
         return tk.Button(
@@ -308,6 +361,63 @@ class PaperTranslatorApp:
             fg="white" if accent else "#475467", activeforeground="white" if accent else TEXT,
             font=(FONT, 9, "bold" if accent else "normal"), padx=13, pady=6, cursor="hand2"
         )
+
+    def _bind_drag_handle(self, *widgets: tk.Widget) -> None:
+        for widget in widgets:
+            widget.configure(cursor="fleur")
+            widget.bind("<ButtonPress-1>", self._begin_drag)
+            widget.bind("<B1-Motion>", self._drag_result)
+            widget.bind("<ButtonRelease-1>", self._end_drag)
+
+    def _layout_result_window(self, event: tk.Event | None = None) -> None:
+        if event is not None and event.widget is not self.result_window:
+            return
+        if not (
+            self.result_window and self.result_canvas and self.result_shadow
+            and self.result_card and self.result_body_item
+        ):
+            return
+        width = max(RESULT_MIN_WIDTH, self.result_window.winfo_width())
+        height = max(RESULT_MIN_HEIGHT, self.result_window.winfo_height())
+        self.result_canvas.coords(
+            self.result_shadow, *self._rounded_rect_points(9, 12, width - 9, height - 8, 22)
+        )
+        self.result_canvas.coords(
+            self.result_card, *self._rounded_rect_points(5, 5, width - 13, height - 13, 22)
+        )
+        self.result_canvas.itemconfigure(
+            self.result_body_item, width=width - 58, height=height - 56
+        )
+
+    def _begin_resize(self, event: tk.Event) -> str:
+        if self.result_window:
+            self._resize_origin = (
+                event.x_root,
+                event.y_root,
+                self.result_window.winfo_width(),
+                self.result_window.winfo_height(),
+            )
+        return "break"
+
+    def _resize_result(self, event: tk.Event) -> str:
+        if self.result_window and self._resize_origin:
+            start_x, start_y, start_width, start_height = self._resize_origin
+            max_width = self.result_window.winfo_screenwidth() - self.result_window.winfo_x() - 8
+            max_height = self.result_window.winfo_screenheight() - self.result_window.winfo_y() - 8
+            width, height = constrained_result_size(
+                start_width,
+                start_height,
+                event.x_root - start_x,
+                event.y_root - start_y,
+                max_width,
+                max_height,
+            )
+            self.result_window.geometry(f"{width}x{height}")
+        return "break"
+
+    def _end_resize(self, _event: tk.Event) -> str:
+        self._resize_origin = None
+        return "break"
 
     def _show_loading(self, source: str) -> None:
         self._loading_generation += 1
@@ -371,9 +481,11 @@ class PaperTranslatorApp:
             x, y = cursor_position()
             screen_w = self.result_window.winfo_screenwidth()
             screen_h = self.result_window.winfo_screenheight()
-            pos_x = min(max(8, x + 18), screen_w - 528)
-            pos_y = min(max(8, y + 18), screen_h - 328)
-            self.result_window.geometry(f"520x300+{pos_x}+{pos_y}")
+            width = max(RESULT_MIN_WIDTH, self.result_window.winfo_width())
+            height = max(RESULT_MIN_HEIGHT, self.result_window.winfo_height())
+            pos_x = min(max(8, x + 18), max(8, screen_w - width - 8))
+            pos_y = min(max(8, y + 18), max(8, screen_h - height - 8))
+            self.result_window.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.result_window.attributes("-alpha", 0.0)
             self.result_window.deiconify()
             self._fade_in(0.0)
@@ -419,18 +531,24 @@ class PaperTranslatorApp:
         if alpha < 1.0:
             self.result_window.after(16, lambda: self._fade_in(alpha))
 
-    def _begin_drag(self, event: tk.Event) -> None:
+    def _begin_drag(self, event: tk.Event) -> str:
         if self.result_window:
             self._drag_origin = (
                 event.x_root - self.result_window.winfo_x(),
                 event.y_root - self.result_window.winfo_y()
             )
+        return "break"
 
-    def _drag_result(self, event: tk.Event) -> None:
+    def _drag_result(self, event: tk.Event) -> str:
         if self.result_window and self._drag_origin:
             x = event.x_root - self._drag_origin[0]
             y = event.y_root - self._drag_origin[1]
             self.result_window.geometry(f"+{x}+{y}")
+        return "break"
+
+    def _end_drag(self, _event: tk.Event) -> str:
+        self._drag_origin = None
+        return "break"
 
     def _copy_result(self) -> None:
         if not self.result_text:
@@ -508,14 +626,20 @@ class PaperTranslatorApp:
         self.root.after(160, self._poll)
 
     @staticmethod
-    def _rounded_rect(
-        canvas: tk.Canvas, x1: int, y1: int, x2: int, y2: int, radius: int, **kwargs: object
-    ) -> int:
-        points = [
+    def _rounded_rect_points(
+        x1: int, y1: int, x2: int, y2: int, radius: int
+    ) -> list[int]:
+        return [
             x1 + radius, y1, x2 - radius, y1, x2, y1, x2, y1 + radius,
             x2, y2 - radius, x2, y2, x2 - radius, y2, x1 + radius, y2,
             x1, y2, x1, y2 - radius, x1, y1 + radius, x1, y1,
         ]
+
+    @staticmethod
+    def _rounded_rect(
+        canvas: tk.Canvas, x1: int, y1: int, x2: int, y2: int, radius: int, **kwargs: object
+    ) -> int:
+        points = PaperTranslatorApp._rounded_rect_points(x1, y1, x2, y2, radius)
         return canvas.create_polygon(points, smooth=True, splinesteps=24, **kwargs)
 
     def close(self) -> None:

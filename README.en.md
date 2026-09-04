@@ -54,6 +54,7 @@ These are screenshots from Qingyi running inside the Zotero 10 reading flow—no
 - **Native right-click action** inside the Zotero PDF reader.
 - **Immediate feedback** with a lightweight card and animated loading state.
 - **Visible failures** for timeouts, authentication errors, and network issues.
+- **Flexible result window**: drag the header to move it and the bottom-right grip to resize it.
 - **Bring your own endpoint**: OpenAI, DeepSeek, Moonshot, Qwen-compatible services, Ollama, and other `/chat/completions` APIs.
 - **Protected local secrets** using Windows DPAPI for the API key.
 - **Small resident footprint** built with Python/Tk, Win32 tray APIs, and a thin Zotero connector.
