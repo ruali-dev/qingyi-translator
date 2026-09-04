@@ -3,6 +3,17 @@
     "paper-translator-connector@local": {
       "updates": [
         {
+          "version": "0.2.4",
+          "update_link": "https://github.com/ruali-dev/qingyi-translator/releases/download/v0.2.4/qingyi-zotero.xpi",
+          "update_hash": "sha256:15227043d53eece7bcb5737df60b37f6a85255e3a5de30f7f7e767f42f08a1fc",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "10.0",
+              "strict_max_version": "10.0.*"
+            }
+          }
+        },
+        {
           "version": "0.2.3",
           "update_link": "https://github.com/ruali-dev/qingyi-translator/releases/download/v0.2.3/qingyi-zotero.xpi",
           "update_hash": "sha256:c3527d57a96460dd01a00615eb3741d083dd578594f68ff08e404071e9e35ec1",
