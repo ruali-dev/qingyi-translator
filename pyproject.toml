@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qingyi-translator"
-version = "0.2.4"
+version = "0.2.5"
 description = "A lightweight right-click LLM translator for Zotero papers on Windows."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,6 +12,9 @@ license = "Apache-2.0"
 license-files = ["LICENSE"]
 dependencies = [
   "pywin32>=306; sys_platform == 'win32'",
+  "pillow>=11.0",
+  "ziamath==0.13",
+  "resvg-py==0.3.3",
 ]
 
 [project.optional-dependencies]

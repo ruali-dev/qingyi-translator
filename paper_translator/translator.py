@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .config import AppConfig
+from .formulas import split_formulas
 
 
 MAX_TEXT_LENGTH = 20_000
@@ -79,6 +80,9 @@ class Translator:
                     "content": (
                         "你是严谨的学术翻译助手。保持术语、缩写、公式、引用编号和专有名词准确；"
                         f"把用户文本翻译成{self.config.target_language}。"
+                        r"保留已有 LaTeX 公式的命令、变量、上下标和环境，不翻译公式内部内容。"
+                        r"数学表达式使用 LaTeX，行内公式用 \( ... \)，独立公式用 \[ ... \]。"
+                        "不要用代码块包裹译文或公式，不要猜测或补写原文缺失的公式。"
                         "只输出译文，不要解释，不要加标题。"
                     ),
                 },
@@ -89,10 +93,15 @@ class Translator:
 
 def normalize_selection(text: str) -> str:
     text = text.replace("\r\n", "\n").replace("\r", "\n").strip()
-    text = re.sub(r"(?<=\w)-\n(?=\w)", "", text)
-    text = re.sub(r"(?<!\n)\n(?!\n)", " ", text)
-    text = re.sub(r"[ \t]+", " ", text)
-    return text
+    parts = []
+    for segment in split_formulas(text):
+        value = segment.raw
+        if not segment.protected:
+            value = re.sub(r"(?<=\w)-\n(?=\w)", "", value)
+            value = re.sub(r"(?<!\n)\n(?!\n)", " ", value)
+            value = re.sub(r"[ \t]+", " ", value)
+        parts.append(value)
+    return "".join(parts)
 
 
 def chat_completions_url(base_url: str) -> str:
@@ -127,4 +136,3 @@ def _error_detail(raw: str) -> str:
         return str(payload.get("error", {}).get("message") or raw)
     except (json.JSONDecodeError, AttributeError):
         return raw or "未知错误"
-

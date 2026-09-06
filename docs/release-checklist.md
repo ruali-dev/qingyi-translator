@@ -16,6 +16,7 @@
 - [ ] 更新 `CHANGELOG.md`，把 Unreleased 内容归入新版本。
 - [ ] 运行 `py -3 -m pytest`。
 - [ ] 运行 `py -3 scripts/build.py`。
+- [ ] 运行 `dist\Qingyi.exe --check-rendering .codex-tmp\render-check`，检查 `result.json` 与 `formulas.png`，确认打包版本离线渲染、复制和缩放通过。
 - [ ] 在一台没有开发环境的 Windows 机器或虚拟机中试运行 `Qingyi.exe`。
 - [ ] 在 Zotero 10.0.x 中重新安装并验证 `qingyi-zotero.xpi`。
 - [ ] 上传两个构建产物，并附上 SHA-256 校验值。

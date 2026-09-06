@@ -55,6 +55,7 @@ These are screenshots from Qingyi running inside the Zotero 10 reading flow—no
 - **Immediate feedback** with a lightweight card and animated loading state.
 - **Visible failures** for timeouts, authentication errors, and network issues.
 - **Flexible result window**: drag the header to move it and the bottom-right grip to resize it.
+- **Offline math rendering**: display LaTeX fractions, integrals, matrices, and more while retaining source when copying. Supports `$…$`, `$$…$$`, `\(…\)`, `\[…\]`, and common equation environments.
 - **Bring your own endpoint**: OpenAI, DeepSeek, Moonshot, Qwen-compatible services, Ollama, and other `/chat/completions` APIs.
 - **Protected local secrets** using Windows DPAPI for the API key.
 - **Small resident footprint** built with Python/Tk, Win32 tray APIs, and a thin Zotero connector.
@@ -156,6 +157,7 @@ The Zotero connector caches the current Reader selection and sends it to the des
 - The native connector currently targets Zotero 10.0.x.
 - Other PDF readers use the fallback hotkey because a standalone app cannot inject their native context menus.
 - Scanned PDFs need OCR before text can be selected.
+- Math rendering supports common LaTeX notation, with source fallback where possible. Missing formula structure in PDF text selections cannot be recovered; custom macros and complete LaTeX documents are outside the supported scope.
 
 ## Contributing
 

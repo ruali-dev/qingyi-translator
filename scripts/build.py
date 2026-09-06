@@ -32,6 +32,12 @@ def build_desktop() -> Path:
             "--icon", str(ICON),
             "--add-data", f"{ROOT / 'LICENSE'};.",
             "--add-data", f"{ICON};assets/icon",
+            "--add-data", f"{ROOT / 'assets' / 'licenses'};assets/licenses",
+            "--collect-data", "ziamath",
+            "--collect-data", "ziafont",
+            "--collect-data", "latex2mathml",
+            "--recursive-copy-metadata", "ziamath",
+            "--copy-metadata", "resvg-py",
             "--workpath", str(ROOT / ".codex-tmp" / "pyinstaller"),
             "--specpath", str(ROOT / ".codex-tmp"),
             str(ROOT / "app.py")

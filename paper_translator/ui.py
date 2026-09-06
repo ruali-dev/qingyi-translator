@@ -7,6 +7,7 @@ from pathlib import Path
 from tkinter import ttk
 
 from .config import AppConfig, ConfigStore
+from .math_text import MathText
 from .server import ConnectorServer
 from .translator import TranslationError, TranslationResult, Translator
 from .windows import GlobalHotkey, TrayIcon, cursor_position, send_copy_shortcut
@@ -68,7 +69,7 @@ class PaperTranslatorApp:
         self.result_card: int | None = None
         self.result_body_item: int | None = None
         self.result_resize_grip: tk.Canvas | None = None
-        self.result_text: tk.Text | None = None
+        self.result_text: MathText | None = None
         self.result_model: tk.Label | None = None
         self.result_source: tk.Label | None = None
         self.result_mark: tk.Canvas | None = None
@@ -317,7 +318,7 @@ class PaperTranslatorApp:
         self.result_source.pack(side="left", fill="x", expand=True)
         text_shell = tk.Frame(body, bg=CARD)
         text_shell.pack(fill="both", expand=True)
-        text_widget = tk.Text(
+        text_widget = MathText(
             text_shell, wrap="word", relief="flat", bd=0, bg=CARD, fg=TEXT,
             insertbackground=TEXT, selectbackground="#DCE4FF", selectforeground=TEXT,
             font=(FONT, 11), padx=2, pady=4, spacing1=2, spacing3=4, cursor="arrow"
@@ -468,10 +469,7 @@ class PaperTranslatorApp:
         if mode != "loading":
             self._loading_generation += 1
         self._apply_result_mode(mode, model)
-        self.result_text.configure(state="normal")
-        self.result_text.delete("1.0", "end")
-        self.result_text.insert("1.0", translation)
-        self.result_text.configure(state="disabled")
+        self.result_text.set_content(translation, math=mode == "success")
         preview = " ".join(source.split())[:42]
         if mode == "error":
             self.result_source.configure(text="请检查 API 地址、Key 和模型设置", fg=ERROR_TEXT)
@@ -553,7 +551,7 @@ class PaperTranslatorApp:
     def _copy_result(self) -> None:
         if not self.result_text:
             return
-        value = self.result_text.get("1.0", "end-1c")
+        value = self.result_text.source
         self.root.clipboard_clear()
         self.root.clipboard_append(value)
         if self.result_source:

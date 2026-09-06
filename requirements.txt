@@ -1,1 +1,4 @@
 pywin32>=306; sys_platform == "win32"
+pillow>=11.0
+ziamath==0.13
+resvg-py==0.3.3

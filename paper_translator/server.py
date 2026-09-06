@@ -6,6 +6,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
 
+from . import __version__
 from .translator import TranslationError, TranslationResult
 
 
@@ -35,7 +36,7 @@ class ConnectorServer:
                 if self.path != "/health":
                     self._json(404, {"error": "not found"})
                     return
-                self._json(200, {"ok": True, "name": "Qingyi"})
+                self._json(200, {"ok": True, "name": "Qingyi", "version": __version__})
 
             def do_POST(self) -> None:  # noqa: N802
                 if self.path != "/translate":

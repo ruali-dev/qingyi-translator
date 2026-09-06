@@ -20,6 +20,10 @@ def main() -> None:
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
     except (AttributeError, OSError):
         pass
+    if len(sys.argv) == 3 and sys.argv[1] == "--check-rendering":
+        from .diagnostics import check_rendering
+        check_rendering(Path(sys.argv[2]))
+        return
     root = tk.Tk()
     icon_path = resource_path("assets", "icon", "qingyi.ico")
     if icon_path.exists():
